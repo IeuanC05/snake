@@ -1,5 +1,5 @@
 from pickle import NONE
-import sys, pygame, random, os
+import sys, pygame, random, os, operator
 
 # Pygame start
 pygame.init()
@@ -19,6 +19,9 @@ grey = (50, 50, 50)
 score_list = []
 SCORE = 0
 high_score = 0
+keypress = False
+settings = False
+edges = False
    
 # Setting snake game screen size
 dis = pygame.display.set_mode((dis_width, dis_height))
@@ -38,6 +41,7 @@ gameover_font2 = pygame.font.SysFont("timesnewroman", 25)
 
 # Set score font
 score_font = pygame.font.SysFont("calibri", 30)
+start_font = pygame.font.SysFont("calibri", 50)
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -78,31 +82,83 @@ def snake(snake_block, snake_list):
         pygame.draw.rect(dis, green, [x[0], x[1], snake_block, snake_block])
 
 # message function when called displays game over screen
-def message(msg, color, msg2):
-    mesg = gameover_font.render(msg, True, color)
-    dis.blit(mesg, [275, 175])
-    mesg2 = gameover_font2.render(msg2, True, color)
-    dis.blit(mesg2, [250, 260])
+def game_over_screen():
+    mesg = gameover_font.render("YOU DIED", True, red)
+    dis.blit(mesg, [275, 20])
+    mesg2 = gameover_font2.render("PRESS ANY BUTTON TO CONTINUE!", True, red)
+    dis.blit(mesg2, [250, 110])
     f = open(resource_path("high_score.txt"))
     highscore_find()
     if os.stat(resource_path("high_score.txt")).st_size == 0:
         mesg3 = score_font.render("NEW HIGH SCORE  " + str(SCORE), True, white)
-        dis.blit(mesg3, [310, 305])
+        dis.blit(mesg3, [310, 140])
         score_save(str(SCORE))
     else:
         if SCORE <= high_score:
             mesg3 = score_font.render("HIGH SCORE  " + str(high_score), True, white)
-            dis.blit(mesg3, [340, 305])
+            dis.blit(mesg3, [340, 135])
             mesg4 = score_font.render("SCORE  " + str(SCORE), True, white)
-            dis.blit(mesg4, [380, 345])
+            dis.blit(mesg4, [380, 185])
         elif SCORE > high_score:
             mesg3 = score_font.render("NEW HIGH SCORE  " + str(SCORE), True, white)
-            dis.blit(mesg3, [310, 305])
+            dis.blit(mesg3, [310, 135])
             score_save(str(SCORE))
             
 def gold_score(score):
     gold_value = score_font.render("GOLD APPLE POINTS:  " + str(score), True, gold)
     dis.blit(gold_value, [((dis_width / 3) * 2) + 5, 5])
+
+def settings_menu():
+    global edges
+    while True:
+        if edges == True:
+            e_on_off = "ON"
+        elif edges == False:
+            e_on_off = "OFF"
+        dis.fill(black)
+        pygame.draw.rect(dis, gold, [360, 175, 200, 90])
+        mesg = score_font.render("Edges(e):  " + e_on_off, True, black)
+        dis.blit(mesg, [375, 210])
+        pygame.display.update()
+        for event in pygame.event.get():
+            mouse = pygame.mouse.get_pos()
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:
+                    edges = not edges
+                    pass
+                else:
+                    return False
+
+def Start_Menu():
+    global keypress
+    global settings
+    while keypress == False:
+        clock.tick(60) 
+        dis.fill(black)        
+        mesg = start_font.render("SNAKE", True, green)
+        dis.blit(mesg, [(dis_width / 2) - 60, 20])
+        mesg2 = score_font.render("PRESS ANY BUTTON TO START!", True, green)
+        dis.blit(mesg2, [(dis_width / 2) - 175, 85])
+        pygame.draw.rect(dis, gold, [20, 450, 200, 90]) 
+        mesg3 = score_font.render("Settings(s)", True, black)
+        dis.blit(mesg3, [55, 480])
+        pygame.display.update()
+        for event in pygame.event.get():
+            mouse = pygame.mouse.get_pos() 
+            if event.type == pygame.QUIT:
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if mouse[0] >= 20 and mouse[1] >= 450 and mouse[0] <= 220 and mouse[1] <= 540:
+                    return settings_menu()
+                else:
+                    keypress = True
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_s:
+                    return settings_menu()
+                else:
+                    keypress = True
 
 # main function happens when application runs
 def main():
@@ -128,6 +184,7 @@ def main():
     Length_of_snake = 1
     COUNTER = 0
     global SCORE
+    global edges
     DIRECTION = NONE
     player_x_temp = player_x
     player_y_temp = player_y
@@ -139,6 +196,8 @@ def main():
     apple_y = round(random.randrange(40, dis_height - (40 + snake_block)) / 20.0) * 20.0
     gold_apple_x = round(random.randrange(0, dis_width - snake_block) / 20.0) * 20.0
     gold_apple_y = round(random.randrange(40, dis_height - (40 + snake_block)) / 20.0) * 20.0
+    
+    Start_Menu()
 
     # main game loop
     while not game_over:
@@ -148,7 +207,7 @@ def main():
             
             # game over screen
             dis.fill(black)
-            message("YOU DIED", red, "PRESS ANY BUTTON TO CONTINUE!")
+            game_over_screen()
             pygame.display.update()
             clock.tick(60)
 
@@ -167,8 +226,6 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-                break
-
             # Determines player direction based on button press
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_a:
@@ -198,14 +255,24 @@ def main():
                         break
 
         # If player hits edge of screen sends them to other side of display area
-        if player_x > dis_width - (snake_block * 2) and DIRECTION == 'right':
-            player_x = -snake_block
-        elif player_x < snake_block and DIRECTION == 'left':
-            player_x = dis_width
-        elif player_y > dis_height - (snake_block * 2) and DIRECTION == 'down':
-            player_y = snake_block
-        elif player_y <= (snake_block * 2) + 5 and DIRECTION == 'up':
-            player_y = dis_height
+        if edges == False:
+            if player_x > dis_width - (snake_block * 2) and DIRECTION == 'right':
+                player_x = -snake_block
+            elif player_x < snake_block and DIRECTION == 'left':
+                player_x = dis_width
+            elif player_y > dis_height - (snake_block * 2) and DIRECTION == 'down':
+                player_y = snake_block
+            elif player_y <= (snake_block * 2) + 5 and DIRECTION == 'up':
+                player_y = dis_height
+        elif edges == True:
+            if player_x >= dis_width - (snake_block * 2) and DIRECTION == 'right':
+                game_close = True
+            elif player_y >= dis_height - (snake_block * 2) and DIRECTION == 'down':
+                game_close = True
+            elif player_x <= 0 + snake_block and DIRECTION == 'left':
+                game_close = True
+            elif player_y <= 0 + (snake_block * 3) and DIRECTION == 'up':
+                game_close = True 
 
         # moves player based on previous input
         player_x += x_change

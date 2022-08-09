@@ -22,6 +22,9 @@ high_score = 0
 keypress = False
 settings = False
 edges = False
+game_started = False
+snake_speed = 10
+e_on_off = "OFF"
    
 # Setting snake game screen size
 dis = pygame.display.set_mode((dis_width, dis_height))
@@ -41,7 +44,9 @@ gameover_font2 = pygame.font.SysFont("timesnewroman", 25)
 
 # Set score font
 score_font = pygame.font.SysFont("calibri", 30)
-start_font = pygame.font.SysFont("calibri", 50)
+score_font2 = pygame.font.SysFont("calibri", 15)
+score_font3 = pygame.font.SysFont("calibri", 40)
+start_font = pygame.font.SysFont("calibri", 100)
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -87,12 +92,16 @@ def game_over_screen():
     dis.blit(mesg, [275, 20])
     mesg2 = gameover_font2.render("PRESS ANY BUTTON TO CONTINUE!", True, red)
     dis.blit(mesg2, [250, 100])
+    mesg1 = score_font3.render("Edges:  " + str(e_on_off), True, green)
+    dis.blit(mesg1, [(dis_width / 2) - 85, 250])
+    mesg2 = score_font3.render("Snake Speed:  " + str(snake_speed - 3), True, green)
+    dis.blit(mesg2, [(dis_width / 2) - 130, 290])
     pygame.draw.rect(dis, gold, [20, 450, 200, 90]) 
     mesg3 = score_font.render("Settings(s)", True, black)
     dis.blit(mesg3, [55, 480])
     pygame.draw.rect(dis, gold, [700, 450, 200, 90]) 
-    mesg3 = score_font.render("Continue(c)", True, black)
-    dis.blit(mesg3, [55, 480])
+    mesg3 = score_font.render("Play(p)", True, black)
+    dis.blit(mesg3, [740, 480])
     f = open(resource_path("high_score.txt"))
     highscore_find()
     if os.stat(resource_path("high_score.txt")).st_size == 0:
@@ -115,6 +124,10 @@ def gold_score(score):
     dis.blit(gold_value, [((dis_width / 3) * 2) + 5, 5])
 
 def settings_menu():
+    global e_on_off
+    global snake_speed
+    global SCORE
+    global game_started
     global edges
     while True:
         if edges == True:
@@ -125,9 +138,14 @@ def settings_menu():
         pygame.draw.rect(dis, gold, [360, 175, 200, 90])
         mesg = score_font.render("Edges(e):  " + e_on_off, True, black)
         dis.blit(mesg, [375, 210])
-        pygame.draw.rect(dis, gold, [470, 400, 200, 90])
+        pygame.draw.rect(dis, gold, [700, 450, 200, 90])
         mesg1 = score_font.render("Play(p)", True, black)
-        dis.blit(mesg1, [530, 435])
+        dis.blit(mesg1, [760, 485])
+        pygame.draw.polygon(dis, gold, ((630, 285), (630, 385), (730, 335)))
+        pygame.draw.polygon(dis, gold, ((290, 285), (290, 385), (190, 335)))
+        pygame.draw.rect(dis, gold, [310, 285, 300, 100])
+        mesg2 = score_font.render("Snake Speed(1-9):  " + str(snake_speed - 3), True, black)
+        dis.blit(mesg2, [330, 320])
         pygame.display.update()
         for event in pygame.event.get():
             mouse = pygame.mouse.get_pos()
@@ -136,27 +154,47 @@ def settings_menu():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_e:
                     edges = not edges
+                    game_started = True
                 elif event.key == pygame.K_p:
-                    return False
+                    game_started = True
+                    clock.tick(snake_speed)
+                    score_list.append(SCORE)
+                    SCORE = 0
+                    main()
+                elif event.key == pygame.K_LEFT or event.key == pygame.K_a and snake_speed > 4:
+                    snake_speed -= 1
+                elif event.key == pygame.K_RIGHT or event.key == pygame.K_d and snake_speed < 12:
+                    snake_speed += 1
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if mouse[0] >= 360 and mouse[1] >= 175 and mouse[0] <= 560 and mouse[1] <= 265:
                     edges = not edges
-                elif mouse[0] >= 460 and mouse[1] >= 400 and mouse[0] <= 660 and mouse[1] <= 490:
-                    return False
+                    game_started = True
+                elif mouse[0] >= 700 and mouse[1] >= 450 and mouse[0] <= 900 and mouse[1] <= 540:
+                    game_started = True
+                    clock.tick(snake_speed)
+                    score_list.append(SCORE)
+                    SCORE = 0
+                    main()
 
 def Start_Menu():
+    global e_on_off
     global keypress
     global settings
     while keypress == False:
         clock.tick(60) 
         dis.fill(black)        
         mesg = start_font.render("SNAKE", True, green)
-        dis.blit(mesg, [(dis_width / 2) - 60, 20])
-        mesg2 = score_font.render("PRESS ANY BUTTON TO START!", True, green)
-        dis.blit(mesg2, [(dis_width / 2) - 175, 85])
+        dis.blit(mesg, [(dis_width / 2) - 140, 20])
+        mesg1 = score_font3.render("Edges:  " + str(e_on_off), True, green)
+        dis.blit(mesg1, [(dis_width / 2) - 85, 120])
+        mesg2 = score_font3.render("Snake Speed:  " + str(snake_speed - 3), True, green)
+        dis.blit(mesg2, [(dis_width / 2) - 130, 170])
         pygame.draw.rect(dis, gold, [20, 450, 200, 90]) 
         mesg3 = score_font.render("Settings(s)", True, black)
         dis.blit(mesg3, [55, 480])
+        pygame.draw.rect(dis, gold, [700, 450, 200, 90]) 
+        mesg4 = score_font.render("Play(p)", True, black)
+        dis.blit(mesg4, [760, 480])
         pygame.display.update()
         for event in pygame.event.get():
             mouse = pygame.mouse.get_pos() 
@@ -165,12 +203,12 @@ def Start_Menu():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if mouse[0] >= 20 and mouse[1] >= 450 and mouse[0] <= 220 and mouse[1] <= 540:
                     return settings_menu()
-                else:
+                elif mouse[0] >= 700 and mouse <= 900 and mouse[1] >= 450 and mouse[1] <= 540:
                     keypress = True
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s:
                     return settings_menu()
-                else:
+                elif event.key == pygame.K_p:
                     keypress = True
 
 # main function happens when application runs
@@ -182,7 +220,7 @@ def main():
     game_close = False
 
     # Set snake speed
-    snake_speed = 10
+    global snake_speed
 
     # Sets initial player location
     player_x = snake_block * 24
@@ -210,7 +248,8 @@ def main():
     gold_apple_x = round(random.randrange(0, dis_width - snake_block) / 20.0) * 20.0
     gold_apple_y = round(random.randrange(40, dis_height - (40 + snake_block)) / 20.0) * 20.0
     
-    Start_Menu()
+    if game_started != True:
+        Start_Menu()
 
     # main game loop
     while not game_over:
@@ -231,8 +270,8 @@ def main():
                         sys.exit()
                     elif event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_s:
-                            settings()
-                        elif event.key == pygame.K_c:
+                            settings_menu()
+                        elif event.key == pygame.K_p:
                             clock.tick(snake_speed)
                             score_list.append(SCORE)
                             SCORE = 0
@@ -240,9 +279,13 @@ def main():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse = pygame.mouse.get_pos()
                     if mouse[0] >= 20 and mouse[0] <= 220 and mouse[1] >= 450 and mouse[1] <= 540:
-                        settings()
-                    if mouse[0] >=  and mouse[0] <= 220 and mouse[1] >= 450 and mouse[1] <= 540:
-        
+                        settings_menu()
+                    if mouse[0] >= 700 and mouse[0] <= 900 and mouse[1] >= 450 and mouse[1] <= 540:
+                        clock.tick(snake_speed)
+                        score_list.append(SCORE)
+                        SCORE = 0
+                        main()
+
         # If player quits during game
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -359,7 +402,7 @@ def main():
                     apple_y = round(random.randrange(40, dis_height - (40 + snake_block)) / 20.0) * 20.0
                     continue
             Length_of_snake += 1
-            SCORE += 7
+            SCORE += snake_speed - 3
             COUNTER += 1
             if COUNTER % 5 == 0:
                 gold_apple_x = round(random.randrange(0, dis_width - snake_block) / 20.0) * 20.0

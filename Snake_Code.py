@@ -86,7 +86,13 @@ def game_over_screen():
     mesg = gameover_font.render("YOU DIED", True, red)
     dis.blit(mesg, [275, 20])
     mesg2 = gameover_font2.render("PRESS ANY BUTTON TO CONTINUE!", True, red)
-    dis.blit(mesg2, [250, 110])
+    dis.blit(mesg2, [250, 100])
+    pygame.draw.rect(dis, gold, [20, 450, 200, 90]) 
+    mesg3 = score_font.render("Settings(s)", True, black)
+    dis.blit(mesg3, [55, 480])
+    pygame.draw.rect(dis, gold, [700, 450, 200, 90]) 
+    mesg3 = score_font.render("Continue(c)", True, black)
+    dis.blit(mesg3, [55, 480])
     f = open(resource_path("high_score.txt"))
     highscore_find()
     if os.stat(resource_path("high_score.txt")).st_size == 0:
@@ -96,9 +102,9 @@ def game_over_screen():
     else:
         if SCORE <= high_score:
             mesg3 = score_font.render("HIGH SCORE  " + str(high_score), True, white)
-            dis.blit(mesg3, [340, 135])
+            dis.blit(mesg3, [335, 140])
             mesg4 = score_font.render("SCORE  " + str(SCORE), True, white)
-            dis.blit(mesg4, [380, 185])
+            dis.blit(mesg4, [380, 175])
         elif SCORE > high_score:
             mesg3 = score_font.render("NEW HIGH SCORE  " + str(SCORE), True, white)
             dis.blit(mesg3, [310, 135])
@@ -119,6 +125,9 @@ def settings_menu():
         pygame.draw.rect(dis, gold, [360, 175, 200, 90])
         mesg = score_font.render("Edges(e):  " + e_on_off, True, black)
         dis.blit(mesg, [375, 210])
+        pygame.draw.rect(dis, gold, [470, 400, 200, 90])
+        mesg1 = score_font.render("Play(p)", True, black)
+        dis.blit(mesg1, [530, 435])
         pygame.display.update()
         for event in pygame.event.get():
             mouse = pygame.mouse.get_pos()
@@ -127,8 +136,12 @@ def settings_menu():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_e:
                     edges = not edges
-                    pass
-                else:
+                elif event.key == pygame.K_p:
+                    return False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if mouse[0] >= 360 and mouse[1] >= 175 and mouse[0] <= 560 and mouse[1] <= 265:
+                    edges = not edges
+                elif mouse[0] >= 460 and mouse[1] >= 400 and mouse[0] <= 660 and mouse[1] <= 490:
                     return False
 
 def Start_Menu():
@@ -217,10 +230,18 @@ def main():
                     if event.type == pygame.QUIT:
                         sys.exit()
                     elif event.type == pygame.KEYDOWN:
-                        clock.tick(snake_speed)
-                        score_list.append(SCORE)
-                        SCORE = 0
-                        main()
+                        if event.key == pygame.K_s:
+                            settings()
+                        elif event.key == pygame.K_c:
+                            clock.tick(snake_speed)
+                            score_list.append(SCORE)
+                            SCORE = 0
+                            main()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse = pygame.mouse.get_pos()
+                    if mouse[0] >= 20 and mouse[0] <= 220 and mouse[1] >= 450 and mouse[1] <= 540:
+                        settings()
+                    if mouse[0] >=  and mouse[0] <= 220 and mouse[1] >= 450 and mouse[1] <= 540:
         
         # If player quits during game
         for event in pygame.event.get():
